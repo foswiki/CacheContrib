@@ -1,0 +1,2 @@
+LWP::UserAgent,>=0,cpan,Required
+CHI,>=0,cpan,Required

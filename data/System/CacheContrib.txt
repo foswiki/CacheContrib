@@ -1,0 +1,63 @@
+%META:TOPICINFO{author="micha" comment="reprev" date="1595842531" format="1.1" reprev="3" version="3"}%
+---+!! %TOPIC%
+%FORMFIELD{"Description"}%
+
+%TOC%
+
+---++ Description
+
+This package is used by other extensions in need of caching services. This specific cache stores data
+for a short period time, e.g. one day, for faster access in the meantime. Data might be any arbitrary
+perl data object which is serialized by the underlying cache implementation [[CPAN:CHI][CHI - Unified cache handling interface]].
+
+CHI offers some interesting features such as multi-level caching, shared caching and distributed caching
+based on the configuration. It thus is suitable to share cached data among several Foswiki backends, either on the same host
+or in a distributed setup.
+
+---++ Perl API
+
+%INCLUDE{"doc:Foswiki::Contrib::CacheContrib" level="3"}%
+
+---++ Clearing and Purging the cache
+
+The cache can be cleared or purged using a separate tool that is best installed as a cronjob to perform these
+maintenance steps offline on a regular base.
+
+   * =purgeCache=: purge outdated cache entries as configured in the =$Foswiki::cfg{CacheContrib}{CacheExpire}= setting
+   * =clearCache=: clear all of the cache independently of its expiry time
+   * =virtualhosts-pureCache=, =virtualhosts-clearCache=: same scripts as above but to be used in a [[Extensions:VirtualHostingContrib][virtual hosting]] environment
+
+---++ LWP::UserAgent 
+
+!CacheContrib implements a caching user agent ontop of the regular LWP::UserAgent. This can either be instanciated using the =Foswiki::Contrib::CacheContrib::getUserAgent()= api
+or by directly creating an object of the class =Foswiki::Contrib::CacheContrib::UserAgent=. The default caching namespace for both is =UserAgent=, that is all instances share
+the same cache. The =UserAgent= cache may be purged individually using the url parameter =refresh=on= or =refresh=ua=. 
+
+For convenience there is a caching variat of the standard API =Foswiki::Func::getExternalResource= available at =Foswiki::Contrib::CacheContrib::getExternalResource= which basically
+behaves the same but except:
+
+   * uses proper proxy settings
+   * uses LWP::UserAgent for any network interaction
+   * uses caching 
+
+---++ Installation Instructions
+%$INSTALL_INSTRUCTIONS%
+
+---++ Dependencies
+%$DEPENDENCIES%
+
+---++ Change History
+
+%TABLE{columnwidths="7em" tablewidth="100%"}%
+| 14 Oct 2020 | initial release |
+
+%META:FORM{name="PackageForm"}%
+%META:FIELD{name="Author" title="Author" value="Michael Daum"}%
+%META:FIELD{name="Version" title="Version" value="%25$VERSION%25"}%
+%META:FIELD{name="Release" title="Release" value="%25$RELEASE%25"}%
+%META:FIELD{name="Description" title="Description" value="%25$SHORTDESCRIPTION%25"}%
+%META:FIELD{name="Repository" title="Repository" value="https://github.com/foswiki/%25$ROOTMODULE%25"}%
+%META:FIELD{name="Copyright" title="Copyright" value="2020, Michael Daum, All Rights Reserved"}%
+%META:FIELD{name="License" title="License" value="GPL ([[http://www.gnu.org/copyleft/gpl.html][GNU General Public License]])"}%
+%META:FIELD{name="Home" title="Home" value="http://foswiki.org/Extensions/%25$ROOTMODULE%25"}%
+%META:FIELD{name="Support" title="Support" value="http://foswiki.org/Support/%25$ROOTMODULE%25"}%

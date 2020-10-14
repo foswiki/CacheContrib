@@ -1,0 +1,11 @@
+!noci
+data/System/CacheContrib.txt 0644
+lib/Foswiki/Contrib/CacheContrib/Config.spec 0644
+lib/Foswiki/Contrib/CacheContrib/Core.pm 0644
+lib/Foswiki/Contrib/CacheContrib/DEPENDENCIES 0644
+lib/Foswiki/Contrib/CacheContrib.pm 0644
+lib/Foswiki/Contrib/CacheContrib/UserAgent.pm 0644
+tools/clearCache 0755
+tools/purgeCache 0755
+tools/virtualhosts-clearCache 0755
+tools/virtualhosts-purgeCache 0755

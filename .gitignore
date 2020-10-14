@@ -1,0 +1,9 @@
+*,v
+*.swp
+/CacheContrib.md5
+/CacheContrib.sha1
+/CacheContrib.tgz
+/CacheContrib.txt
+/CacheContrib.zip
+/CacheContrib_installer
+/CacheContrib_installer.pl
