@@ -1,6 +1,6 @@
 # Extension for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# CacheContrib is Copyright (C) 2020 Michael Daum http://michaeldaumconsulting.com
+# CacheContrib is Copyright (C) 2020-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -38,17 +38,23 @@ sub new {
 }
 
 sub cache {
-  my ($this, $namespace) = @_;
+  my ($this, $namespace, $expire) = @_;
 
   $namespace ||= 'default';
+  $expire ||= $this->{cacheExpire};
 
-  _writeDebug("cache for $namespace");
+  _writeDebug("cache for $namespace, expire=$expire");
 
-  unless (defined $this->{cache}{$namespace}) {
-    $this->{cache}{$namespace} = CHI->new(
+  my $cache = $this->{cache}{$namespace};
+  if (defined $cache) {
+    _writeDebug("... found in cache");
+    $cache->expires_in($expire) if defined $expire;
+  } else {
+    _writeDebug("... creating cache");
+    $cache = $this->{cache}{$namespace} = CHI->new(
       driver => $this->{driver},
       root_dir => $this->{cacheRoot},
-      expires_in => $this->{cacheExpire},
+      expires_in => $expire,
       namespace => $namespace,
       l1_cache => { 
         driver => 'Memory', 
@@ -58,7 +64,7 @@ sub cache {
     );
   }
 
-  return $this->{cache}{$namespace};
+  return $cache;
 }
 
 sub purgeCache {

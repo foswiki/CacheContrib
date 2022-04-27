@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# CacheContrib is Copyright (C) 2020 Michael Daum http://michaeldaumconsulting.com
+# CacheContrib is Copyright (C) 2020-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -21,14 +21,17 @@ use warnings;
 use Foswiki::Func();
 use Foswiki::Contrib::CacheContrib();
 use LWP::UserAgent();
+#use Data::Dump qw(dump);
 our @ISA = qw( LWP::UserAgent );
 
 use constant TRACE => 0; # toggle me
 
 sub new {
   my $class = shift;
+  my $namespace = shift || "UserAgent";
+  my %params = @_;
 
-  my $this = $class->SUPER::new(@_);
+  my $this = $class->SUPER::new(%params);
 
   my $proxy = $Foswiki::cfg{PROXY}{HOST};
   if ($proxy) {
@@ -41,13 +44,55 @@ sub new {
     }
   }
 
-# $this->ssl_opts(
-#   verify_hostname => 0,
-# );
+  #$this->ssl_opts(verify_hostname => 0);
+  my $sslCAPath = $Foswiki::cfg{CacheContrib}{SSLCAPath};
+  $this->ssl_opts(SSL_ca_path => $sslCAPath) if $sslCAPath;
 
-  $this->agent($Foswiki::cfg{CacheContrib}{UserAgentString} || 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/74.0.3729.169 Chrome/74.0.3729.169 Safari/537.36'); 
+  $this->agent($Foswiki::cfg{CacheContrib}{UserAgentString} || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36'); 
+  $this->{namespace} = $namespace;
+  $this->{expire} = $params{expire};
+  $this->{ignoreParams} = {};
 
   return $this;
+}
+
+sub getCache {
+  my ($this, $expire) = @_;
+
+  $expire //= $this->{expire};
+  return Foswiki::Contrib::CacheContrib::getCache($this->{namespace}, $expire);
+}
+
+sub ignoreParams {
+  my ($this, @keys) = @_;
+
+  if (@keys) {
+    $this->{ignoreParams}{$_} = 1 foreach @keys;
+  }
+
+  return keys %{$this->{ignoreParams}};
+}
+
+sub getCacheKey {
+  my ($this, $request) = @_;
+
+  my @key = ();
+  my $uri = $request->uri();
+
+  push @key, $uri->scheme();
+  push @key, $uri->authority();
+  push @key, $uri->path();
+
+  my %query = $uri->query_form();
+  foreach my $key (keys %query) {
+    next if $this->{ignoreParams}{$key};
+    push @key, "$key=$query{$key}";
+  }
+
+  my $key = join("::", @key);
+  _writeDebug("key=$key");
+
+  return $key;
 }
 
 sub request {
@@ -58,28 +103,28 @@ sub request {
   my $method = $request->method();
   return $this->SUPER::request(@args) unless $method =~ /^(GET|HEAD)$/;
 
-  my $uri = $request->uri;
-  my $cache = Foswiki::Contrib::CacheContrib::getCache("UserAgent");
-  my $key = $uri->as_string();
+  my $key = $this->getCacheKey($request);
   my $obj;
 
   my $cgiRequest = Foswiki::Func::getRequestObject();
   my $refresh = $cgiRequest->param("refresh") || '';
-  $refresh = ($refresh =~ /^(on|ua)$/) ? 1:0;
+  $refresh = ($refresh =~ /^(on|ua|$this->{namespace})$/) ? 1:0;
 
-  $obj = $cache->get($key) unless $refresh;
+  $obj = $this->getCache->get($key) unless $refresh;
 
   if (defined $obj) {
-    _writeDebug("... found in cache $uri");
+    _writeDebug("... found in cache $key");
     return HTTP::Response->parse($obj);
   } 
 
-  _writeDebug(" ... fetching $uri");
+  _writeDebug(" ... fetching $key");
   my $res = $this->SUPER::request(@args);
 
   ## cache only "200 OK" content
   if ($res->code eq HTTP::Status::RC_OK) {
-    $cache->set($key, $res->as_string());
+    $this->getCache->set($key, $res->as_string());
+  } else {
+    #_writeDebug("res=".dump($res));
   }
 
   return $res;

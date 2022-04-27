@@ -1,6 +1,6 @@
 # Extension for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# CacheContrib is Copyright (C) 2020 Michael Daum http://michaeldaumconsulting.com
+# CacheContrib is Copyright (C) 2020-2022 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -38,13 +38,14 @@ use strict;
 use warnings;
 
 use Foswiki::Func ();
+use Foswiki::Contrib::CacheContrib::UserAgent ();
 
-our $VERSION = '1.00';
-our $RELEASE = '14 Oct 2020';
+our $VERSION = '3.00';
+our $RELEASE = '17 Mar 2022';
 our $SHORTDESCRIPTION = 'Caching services for Foswiki extensions';
 our $NO_PREFS_IN_TOPIC = 1;
 our $core;
-our $userAgent;
+our %userAgents;
 
 sub _getCore {
   unless (defined $core) {
@@ -57,29 +58,27 @@ sub _getCore {
 
 =begin TML
 
----++ getUserAgent() -> $ua
+---++ getUserAgent($namespace) -> $ua
 
 returns a singleton caching user agent compatible to CPAN:LWP::UserAgent.
-Note, the returned user agent uses a cache in the fixed namespace "UserAgent". So you
-might access its cache via =Foswiki::Contrib::CacheContrib::getCache("UserAgent")=
-Cache entries are using the URL of the external resource being fetched. See also
-=Foswiki::Contrib::CacheContrib::getExternalResource()=
+The optional =namespace= (defaults to "UserAgent") parameter defines the cache section used for this agent.
 
 =cut
 
 sub getUserAgent {
+  my $namespace = shift || "UserAgent";
 
-  unless (defined $userAgent) {
-    require Foswiki::Contrib::CacheContrib::UserAgent;
-    $userAgent = Foswiki::Contrib::CacheContrib::UserAgent->new();
-  }
+  my $ua = $userAgents{$namespace};
 
-  return $userAgent;
+  $ua = $userAgents{$namespace} = Foswiki::Contrib::CacheContrib::UserAgent->new($namespace, @_)
+    unless defined $ua;
+
+  return $ua;
 }
 
 =begin TML
 
----++ getCache($namespace) -> $cache
+---++ getCache($namespace, $expire) -> $cache
 
 returns a [[CPAN:CHI][CHI cache object]] for the given namespace.
 
@@ -148,7 +147,7 @@ purges expired entries of the cache for the given namespace
 =cut
 
 sub purgeCache {
-  return _getCore->clearCache(shift);
+  return _getCore->purgeCache(shift);
 }
 
 sub cgiPurgeCache {
