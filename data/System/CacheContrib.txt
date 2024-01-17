@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="micha" comment="reprev" date="1595842531" format="1.1" reprev="3" version="3"}%
+%META:TOPICINFO{author="ProjectContributor" comment="reprev" date="1655478401" format="1.1" version="1"}%
 ---+!! %TOPIC%
 %FORMFIELD{"Description"}%
 
@@ -25,7 +25,7 @@ maintenance steps offline on a regular base.
 
    * =purgeCache=: purge outdated cache entries as configured in the =$Foswiki::cfg{CacheContrib}{CacheExpire}= setting
    * =clearCache=: clear all of the cache independently of its expiry time
-   * =virtualhosts-pureCache=, =virtualhosts-clearCache=: same scripts as above but to be used in a [[Extensions:VirtualHostingContrib][virtual hosting]] environment
+   * =virtualhosts-pureCache=, =virtualhosts-clearCache=: same scripts as above but to be used in a virtual hosting environment
 
 ---++ LWP::UserAgent 
 
@@ -49,6 +49,7 @@ behaves the same but except:
 ---++ Change History
 
 %TABLE{columnwidths="7em" tablewidth="100%"}%
+|  02 Feb 2023 | only http and https protocols are allowed fetching external resources |
 |  27 Apr 2022 | add support for multiple namespaces and cache agents; improve handling of per cache expiry parameters |
 |  14 Oct 2020 | initial release |
 
@@ -58,7 +59,7 @@ behaves the same but except:
 %META:FIELD{name="Release" title="Release" value="%25$RELEASE%25"}%
 %META:FIELD{name="Description" title="Description" value="%25$SHORTDESCRIPTION%25"}%
 %META:FIELD{name="Repository" title="Repository" value="https://github.com/foswiki/%25$ROOTMODULE%25"}%
-%META:FIELD{name="Copyright" title="Copyright" value="2020-2022, Michael Daum, All Rights Reserved"}%
+%META:FIELD{name="Copyright" title="Copyright" value="2020-2024, Michael Daum, All Rights Reserved"}%
 %META:FIELD{name="License" title="License" value="GPL ([[http://www.gnu.org/copyleft/gpl.html][GNU General Public License]])"}%
 %META:FIELD{name="Home" title="Home" value="http://foswiki.org/Extensions/%25$ROOTMODULE%25"}%
 %META:FIELD{name="Support" title="Support" value="http://foswiki.org/Support/%25$ROOTMODULE%25"}%

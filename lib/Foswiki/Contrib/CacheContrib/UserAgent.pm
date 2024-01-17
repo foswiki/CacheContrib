@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# CacheContrib is Copyright (C) 2020-2022 Michael Daum http://michaeldaumconsulting.com
+# CacheContrib is Copyright (C) 2020-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -48,6 +48,9 @@ sub new {
   my $sslCAPath = $Foswiki::cfg{CacheContrib}{SSLCAPath};
   $this->ssl_opts(SSL_ca_path => $sslCAPath) if $sslCAPath;
 
+  $this->protocols_allowed(['http', 'https']);
+
+  # see https://www.whatismybrowser.com/guides/the-latest-user-agent/chrome
   $this->agent($Foswiki::cfg{CacheContrib}{UserAgentString} || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36'); 
   $this->{namespace} = $namespace;
   $this->{expire} = $params{expire};
@@ -76,20 +79,26 @@ sub ignoreParams {
 sub getCacheKey {
   my ($this, $request) = @_;
 
-  my @key = ();
+  my @keys = ();
   my $uri = $request->uri();
 
-  push @key, $uri->scheme();
-  push @key, $uri->authority();
-  push @key, $uri->path();
+  _writeDebug("called getCacheKey($uri)");
+
+  push @keys, $uri->scheme();
+  push @keys, $uri->authority();
+  push @keys, $uri->path();
 
   my %query = $uri->query_form();
   foreach my $key (keys %query) {
+    $key =~ s/^\s+//;
+    $key =~ s/\s+$//;
     next if $this->{ignoreParams}{$key};
-    push @key, "$key=$query{$key}";
+    my $val = $query{$key};
+    next unless defined $val;
+    push @keys, "$key=$query{$key}";
   }
 
-  my $key = join("::", @key);
+  my $key = join("::", @keys);
   _writeDebug("key=$key");
 
   return $key;
@@ -99,6 +108,7 @@ sub request {
   my $this = shift;
   my @args = @_;
   my $request = $args[0];
+
 
   my $method = $request->method();
   return $this->SUPER::request(@args) unless $method =~ /^(GET|HEAD)$/;
@@ -117,7 +127,7 @@ sub request {
     return HTTP::Response->parse($obj);
   } 
 
-  _writeDebug(" ... fetching $key");
+  _writeDebug(" ... fetching ".$request->uri);
   my $res = $this->SUPER::request(@args);
 
   ## cache only "200 OK" content
@@ -125,6 +135,7 @@ sub request {
     $this->getCache->set($key, $res->as_string());
   } else {
     #_writeDebug("res=".dump($res));
+    _writeDebug("response code=".$res->code);
   }
 
   return $res;

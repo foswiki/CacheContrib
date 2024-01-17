@@ -1,6 +1,6 @@
 # Extension for Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 #
-# CacheContrib is Copyright (C) 2020-2022 Michael Daum http://michaeldaumconsulting.com
+# CacheContrib is Copyright (C) 2020-2024 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -40,9 +40,10 @@ use warnings;
 use Foswiki::Func ();
 use Foswiki::Contrib::CacheContrib::UserAgent ();
 
-our $VERSION = '3.00';
-our $RELEASE = '17 Mar 2022';
+our $VERSION = '3.10';
+our $RELEASE = '%$RELEASE%';
 our $SHORTDESCRIPTION = 'Caching services for Foswiki extensions';
+our $LICENSECODE = '%$LICENSECODE%';
 our $NO_PREFS_IN_TOPIC = 1;
 our $core;
 our %userAgents;
