@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" comment="reprev" date="1655478401" format="1.1" version="1"}%
+%META:TOPICINFO{author="ProjectContributor" comment="" date="1734611110" format="1.1" version="1"}%
 ---+!! %TOPIC%
 %FORMFIELD{"Description"}%
 
@@ -49,6 +49,7 @@ behaves the same but except:
 ---++ Change History
 
 %TABLE{columnwidths="7em" tablewidth="100%"}%
+|  19 Dec 2024 | improved defaults and config specs |
 |  02 Feb 2023 | only http and https protocols are allowed fetching external resources |
 |  27 Apr 2022 | add support for multiple namespaces and cache agents; improve handling of per cache expiry parameters |
 |  14 Oct 2020 | initial release |

@@ -2,16 +2,16 @@
 # ---++ CacheContrib
 # This is the configuration used by the <b>CacheContrib</b>.
 
-# **STRING**
+# **STRING LABEL="Expire"**
 $Foswiki::cfg{CacheContrib}{CacheExpire} = '1 d';
 
-# **STRING EXPERT**
+# **STRING EXPERT LABEL="Driver"**
 $Foswiki::cfg{CacheContrib}{Driver} = 'File';
 
-# **STRING EXPERT**
-$Foswiki::cfg{CacheContrib}{UserAgentString} = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/74.0.3729.169 Chrome/74.0.3729.169 Safari/537.36';
+# **STRING EXPERT LABEL="UserAgentString"**
+$Foswiki::cfg{CacheContrib}{UserAgentString} = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36';
 
-# **PATH EXPERT CHECK="undefok emptyok" **
+# **PATH EXPERT CHECK="undefok emptyok" LABEL="SSLCAPath"**
 # path The path to a directory containing files containing Certificate Authority certificates. On linux systems a good default is <code>/etc/ssl/certs</code>.
 $Foswiki::cfg{CacheContrib}{SSLCAPath} = '';
 

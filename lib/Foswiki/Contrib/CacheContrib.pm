@@ -40,7 +40,7 @@ use warnings;
 use Foswiki::Func ();
 use Foswiki::Contrib::CacheContrib::UserAgent ();
 
-our $VERSION = '3.10';
+our $VERSION = '3.21';
 our $RELEASE = '%$RELEASE%';
 our $SHORTDESCRIPTION = 'Caching services for Foswiki extensions';
 our $LICENSECODE = '%$LICENSECODE%';

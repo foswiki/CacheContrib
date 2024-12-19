@@ -21,10 +21,10 @@ use warnings;
 use Foswiki::Func();
 use Foswiki::Contrib::CacheContrib();
 use LWP::UserAgent();
-#use Data::Dump qw(dump);
 our @ISA = qw( LWP::UserAgent );
 
 use constant TRACE => 0; # toggle me
+#use Data::Dump qw(dump);
 
 sub new {
   my $class = shift;
@@ -49,10 +49,14 @@ sub new {
   $this->ssl_opts(SSL_ca_path => $sslCAPath) if $sslCAPath;
 
   $this->protocols_allowed(['http', 'https']);
+  $this->timeout(10);
 
   # see https://www.whatismybrowser.com/guides/the-latest-user-agent/chrome
-  $this->agent($Foswiki::cfg{CacheContrib}{UserAgentString} || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36'); 
+  $this->agent($Foswiki::cfg{CacheContrib}{UserAgentString} || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36');
+
+  $namespace =~ s/$Foswiki::cfg{NameFilter}//g;
   $this->{namespace} = $namespace;
+
   $this->{expire} = $params{expire};
   $this->{ignoreParams} = {};
 
@@ -89,7 +93,7 @@ sub getCacheKey {
   push @keys, $uri->path();
 
   my %query = $uri->query_form();
-  foreach my $key (keys %query) {
+  foreach my $key (sort keys %query) {
     $key =~ s/^\s+//;
     $key =~ s/\s+$//;
     next if $this->{ignoreParams}{$key};
@@ -99,7 +103,7 @@ sub getCacheKey {
   }
 
   my $key = join("::", @keys);
-  _writeDebug("key=$key");
+  _writeDebug("... key=$key");
 
   return $key;
 }
@@ -108,7 +112,6 @@ sub request {
   my $this = shift;
   my @args = @_;
   my $request = $args[0];
-
 
   my $method = $request->method();
   return $this->SUPER::request(@args) unless $method =~ /^(GET|HEAD)$/;
@@ -119,6 +122,7 @@ sub request {
   my $cgiRequest = Foswiki::Func::getRequestObject();
   my $refresh = $cgiRequest->param("refresh") || '';
   $refresh = ($refresh =~ /^(on|ua|$this->{namespace})$/) ? 1:0;
+  _writeDebug("... refresh=$refresh");
 
   $obj = $this->getCache->get($key) unless $refresh;
 
@@ -127,11 +131,13 @@ sub request {
     return HTTP::Response->parse($obj);
   } 
 
-  _writeDebug(" ... fetching ".$request->uri);
+  _writeDebug("... fetching ".$request->uri);
+  #_writeDebug("... args=".dump(\@args));
   my $res = $this->SUPER::request(@args);
 
   ## cache only "200 OK" content
   if ($res->code eq HTTP::Status::RC_OK) {
+    _writeDebug("... caching response at $key");
     $this->getCache->set($key, $res->as_string());
   } else {
     #_writeDebug("res=".dump($res));
